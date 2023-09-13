@@ -1,0 +1,132 @@
+package com.zegocloud.uikit.callwithinvitation;
+
+import android.os.Build;
+import android.os.Bundle;
+import android.widget.TextView;
+import androidx.appcompat.app.AppCompatActivity;
+import com.google.android.material.textfield.TextInputLayout;
+import com.zegocloud.uikit.plugin.invitation.ZegoInvitationType;
+import com.zegocloud.uikit.prebuilt.call.ZegoUIKitPrebuiltCallConfig;
+import com.zegocloud.uikit.prebuilt.call.config.DurationUpdateListener;
+import com.zegocloud.uikit.prebuilt.call.config.ZegoCallDurationConfig;
+import com.zegocloud.uikit.prebuilt.call.config.ZegoMenuBarButtonName;
+import com.zegocloud.uikit.prebuilt.call.invite.ZegoCallInvitationData;
+import com.zegocloud.uikit.prebuilt.call.invite.ZegoUIKitPrebuiltCallConfigProvider;
+import com.zegocloud.uikit.prebuilt.call.invite.ZegoUIKitPrebuiltCallInvitationConfig;
+import com.zegocloud.uikit.prebuilt.call.invite.ZegoUIKitPrebuiltCallInvitationService;
+import com.zegocloud.uikit.prebuilt.call.invite.widget.ZegoSendCallInvitationButton;
+import com.zegocloud.uikit.service.defines.ZegoUIKitUser;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
+
+public class MainActivity extends AppCompatActivity {
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        TextView yourUserID = findViewById(R.id.your_user_id);
+        String generateUserID = generateUserID();
+
+        if (Build.MANUFACTURER.equalsIgnoreCase("Xiaomi")) {
+            generateUserID = "48900";
+        } else if (Build.MANUFACTURER.equalsIgnoreCase("Google")) {
+            generateUserID = "15983";
+        } else if (Build.MANUFACTURER.equalsIgnoreCase("vivo")) {
+            generateUserID = "57870";
+        } else {
+            generateUserID = "142857";
+        }
+        TextInputLayout inputLayout = findViewById(R.id.target_user_id);
+        if (Build.MANUFACTURER.equalsIgnoreCase("vivo")) {
+            inputLayout.getEditText().setText("48900,15983");
+        } else if (Build.MANUFACTURER.equalsIgnoreCase("Google")) {
+            inputLayout.getEditText().setText("48900");
+        }
+
+        yourUserID.setText("Your User ID :" + generateUserID);
+
+        initCallInviteService(generateUserID);
+
+        initVoiceButton();
+
+        initVideoButton();
+    }
+
+    private void initVideoButton() {
+        ZegoSendCallInvitationButton newVideoCall = findViewById(R.id.new_video_call);
+        newVideoCall.setIsVideoCall(true);
+        newVideoCall.setOnClickListener(v -> {
+            TextInputLayout inputLayout = findViewById(R.id.target_user_id);
+            String targetUserID = inputLayout.getEditText().getText().toString();
+            String[] split = targetUserID.split(",");
+            List<ZegoUIKitUser> users = new ArrayList<>();
+            for (String userID : split) {
+                String userName = userID + "_name";
+                users.add(new ZegoUIKitUser(userID,userName));
+            }
+            newVideoCall.setInvitees(users);
+        });
+    }
+
+    private void initVoiceButton() {
+        ZegoSendCallInvitationButton newVoiceCall = findViewById(R.id.new_voice_call);
+        newVoiceCall.setIsVideoCall(false);
+        newVoiceCall.setOnClickListener(v -> {
+            TextInputLayout inputLayout = findViewById(R.id.target_user_id);
+            String targetUserID = inputLayout.getEditText().getText().toString();
+            String[] split = targetUserID.split(",");
+            List<ZegoUIKitUser> users = new ArrayList<>();
+            for (String userID : split) {
+                String userName = userID + "_name";
+                users.add(new ZegoUIKitUser(userID,userName));
+            }
+            newVoiceCall.setInvitees(users);
+        });
+    }
+
+    public void initCallInviteService(String generateUserID) {
+        long appID = ;
+        String appSign = ;
+
+        String userID = generateUserID;
+        String userName = generateUserID + "_" + Build.MANUFACTURER;
+
+        ZegoUIKitPrebuiltCallInvitationConfig callInvitationConfig = new ZegoUIKitPrebuiltCallInvitationConfig();
+
+        callInvitationConfig.provider = new ZegoUIKitPrebuiltCallConfigProvider() {
+            @Override
+            public ZegoUIKitPrebuiltCallConfig requireConfig(ZegoCallInvitationData invitationData) {
+                ZegoUIKitPrebuiltCallConfig config = null;
+                boolean isVideoCall = invitationData.type == ZegoInvitationType.VIDEO_CALL.getValue();
+                boolean isGroupCall = invitationData.invitees.size() > 1;
+                if (isVideoCall && isGroupCall) {
+                    config = ZegoUIKitPrebuiltCallConfig.groupVideoCall();
+                } else if (!isVideoCall && isGroupCall) {
+                    config = ZegoUIKitPrebuiltCallConfig.groupVoiceCall();
+                } else if (!isVideoCall) {
+                    config = ZegoUIKitPrebuiltCallConfig.oneOnOneVoiceCall();
+                } else {
+                    config = ZegoUIKitPrebuiltCallConfig.oneOnOneVideoCall();
+                }
+                config.bottomMenuBarConfig.buttons = Arrays.asList(ZegoMenuBarButtonName.TOGGLE_CAMERA_BUTTON,
+                    ZegoMenuBarButtonName.SWITCH_CAMERA_BUTTON, ZegoMenuBarButtonName.HANG_UP_BUTTON,
+                    ZegoMenuBarButtonName.TOGGLE_MICROPHONE_BUTTON, ZegoMenuBarButtonName.BEAUTY_BUTTON);
+                return config;
+
+            }
+        };
+
+        ZegoUIKitPrebuiltCallInvitationService.init(getApplication(), appID, appSign, userID, userName,
+            callInvitationConfig);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        ZegoUIKitPrebuiltCallInvitationService.unInit();
+    }
+}
