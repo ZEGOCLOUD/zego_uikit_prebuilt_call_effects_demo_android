@@ -129,4 +129,17 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
         ZegoUIKitPrebuiltCallInvitationService.unInit();
     }
+
+    private String generateUserID() {
+        StringBuilder builder = new StringBuilder();
+        Random random = new Random();
+        while (builder.length() < 5) {
+            int nextInt = random.nextInt(10);
+            if (builder.length() == 0 && nextInt == 0) {
+                continue;
+            }
+            builder.append(nextInt);
+        }
+        return builder.toString();
+    }
 }
