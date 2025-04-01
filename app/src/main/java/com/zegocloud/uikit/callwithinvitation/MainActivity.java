@@ -7,13 +7,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.material.textfield.TextInputLayout;
 import com.zegocloud.uikit.plugin.invitation.ZegoInvitationType;
 import com.zegocloud.uikit.prebuilt.call.ZegoUIKitPrebuiltCallConfig;
-import com.zegocloud.uikit.prebuilt.call.config.DurationUpdateListener;
-import com.zegocloud.uikit.prebuilt.call.config.ZegoCallDurationConfig;
+import com.zegocloud.uikit.prebuilt.call.ZegoUIKitPrebuiltCallService;
 import com.zegocloud.uikit.prebuilt.call.config.ZegoMenuBarButtonName;
-import com.zegocloud.uikit.prebuilt.call.invite.ZegoCallInvitationData;
-import com.zegocloud.uikit.prebuilt.call.invite.ZegoUIKitPrebuiltCallConfigProvider;
+import com.zegocloud.uikit.prebuilt.call.core.invite.ZegoCallInvitationData;
 import com.zegocloud.uikit.prebuilt.call.invite.ZegoUIKitPrebuiltCallInvitationConfig;
-import com.zegocloud.uikit.prebuilt.call.invite.ZegoUIKitPrebuiltCallInvitationService;
+import com.zegocloud.uikit.prebuilt.call.invite.internal.ZegoUIKitPrebuiltCallConfigProvider;
 import com.zegocloud.uikit.prebuilt.call.invite.widget.ZegoSendCallInvitationButton;
 import com.zegocloud.uikit.service.defines.ZegoUIKitUser;
 import java.util.ArrayList;
@@ -30,22 +28,6 @@ public class MainActivity extends AppCompatActivity {
 
         TextView yourUserID = findViewById(R.id.your_user_id);
         String generateUserID = generateUserID();
-
-        if (Build.MANUFACTURER.equalsIgnoreCase("Xiaomi")) {
-            generateUserID = "48900";
-        } else if (Build.MANUFACTURER.equalsIgnoreCase("Google")) {
-            generateUserID = "15983";
-        } else if (Build.MANUFACTURER.equalsIgnoreCase("vivo")) {
-            generateUserID = "57870";
-        } else {
-            generateUserID = "142857";
-        }
-        TextInputLayout inputLayout = findViewById(R.id.target_user_id);
-        if (Build.MANUFACTURER.equalsIgnoreCase("vivo")) {
-            inputLayout.getEditText().setText("48900,15983");
-        } else if (Build.MANUFACTURER.equalsIgnoreCase("Google")) {
-            inputLayout.getEditText().setText("48900");
-        }
 
         yourUserID.setText("Your User ID :" + generateUserID);
 
@@ -120,14 +102,14 @@ public class MainActivity extends AppCompatActivity {
             }
         };
 
-        ZegoUIKitPrebuiltCallInvitationService.init(getApplication(), appID, appSign, userID, userName,
+        ZegoUIKitPrebuiltCallService.init(getApplication(), appID, appSign, userID, userName,
             callInvitationConfig);
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        ZegoUIKitPrebuiltCallInvitationService.unInit();
+        ZegoUIKitPrebuiltCallService.unInit();
     }
 
     private String generateUserID() {
